@@ -1,0 +1,53 @@
+package com.example.android.quakereport;
+
+import android.content.Context;
+import android.support.annotation.NonNull;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
+
+import java.util.List;
+
+/**
+ * Created by ASUS on 2017-02-12.
+ */
+
+public class EarthquaAdapter extends ArrayAdapter<Earthquake>{
+
+    public EarthquaAdapter(Context context, List<Earthquake> objects) {
+        super(context, 0 , objects);
+    }
+
+    @NonNull
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        // Check if an existing view is being reused, otherwise inflate the view
+        View listItemView = convertView;
+        if (listItemView == null) {
+            listItemView = LayoutInflater.from(getContext()).inflate(
+                    R.layout.earthquake_list_item, parent, false);
+        }
+
+        // Get the {@link Word} object located at this position in the list
+        Earthquake currentEarthquake = getItem(position);
+
+        // Find the TextView in the list_item.xml layout with the ID miwok_text_view.
+        TextView magnitudeTextView = (TextView) listItemView.findViewById(R.id.magnitude);
+        // Get the Miwok translation from the currentWord object and set this text on
+        // the Miwok TextView.
+        magnitudeTextView.setText(currentEarthquake.getMagnitude());
+
+        // Find the TextView in the list_item.xml layout with the ID default_text_view.
+        TextView locationView = (TextView) listItemView.findViewById(R.id.location);
+        // Get the default translation from the currentWord object and set this text on
+        // the default TextView.
+        locationView.setText(currentEarthquake.getLocation());
+
+        TextView dateView = (TextView) listItemView.findViewById(R.id.date);
+        dateView.setText(currentEarthquake.getDate());
+
+        return listItemView;
+    }
+}
