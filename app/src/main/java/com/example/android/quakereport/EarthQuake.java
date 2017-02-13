@@ -6,23 +6,25 @@ package com.example.android.quakereport;
 
 public class Earthquake {
     /**地震 震级*/
-    private String mMagnitude;
+    private double mMagnitude;
     /**地震 发生地点*/
     private String mLocation;
     /**地震 信息*/
-    private String mDate;
-
-    public Earthquake(String magnitude, String location, String date) {
+    private long mDate;
+    /**地震的详细网址*/
+    private String mUrl;
+    public Earthquake(double magnitude, String location, long date,String url) {
         this.mMagnitude = magnitude;
         this.mLocation = location;
         this.mDate = date;
+        this.mUrl = url;
     }
 
     /**
      * 返回地震震级
      * @return 地震震级
      */
-    public String getMagnitude() {
+    public double getMagnitude() {
         return mMagnitude;
     }
 
@@ -38,7 +40,14 @@ public class Earthquake {
      * 返回地震发生时间
      * @return 时间
      */
-    public String getDate() {
+    public long getDate() {
         return mDate;
+    }
+    /**
+     * 返回地震详细的url
+     * @return url
+     */
+    public String getUrl() {
+        return mUrl;
     }
 }

@@ -15,4 +15,6 @@
 -->
 <resources>
     <string name="app_name">Quake Report</string>
+    <!--获取的地址信息没有详细描述时使用此字符串-->
+    <string name="near_the">Near the</string>
 </resources>
