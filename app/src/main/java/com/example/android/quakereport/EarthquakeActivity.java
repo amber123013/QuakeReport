@@ -15,29 +15,41 @@
  */
 package com.example.android.quakereport;
 
+import android.app.LoaderManager;
 import android.content.Intent;
+import android.content.Loader;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class EarthquakeActivity extends AppCompatActivity {
+public class EarthquakeActivity extends AppCompatActivity implements android.app.LoaderManager.LoaderCallbacks<List<Earthquake>> {
 
     public static final String LOG_TAG = EarthquakeActivity.class.getName();
 
     private EarthquaAdapter mAdapter;
 
     private static final String USGS_REQUEST_URL =
-            "http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&minmag=5&limit=30";
+            "http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&minmag=5&limit=9";
+    /**
+     * 地震 loader ID 的常量值。我们可选择任意整数。
+     * 仅当使用多个 loader 时该设置才起作用。
+     */
+    private static final int EARTHQUAKE_LOADER_ID = 1;
+
+    /** 列表为空时显示的 TextView */
+    private TextView mEmptyStateTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.v(LOG_TAG,"重新创建一个Activity");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.earthquake_activity);
 
@@ -64,35 +76,58 @@ public class EarthquakeActivity extends AppCompatActivity {
                 startActivity(webIntent);
             }
         });
-        // 启动 AsyncTask 以获取地震数据
-        EarthquakeAsyncTask task = new EarthquakeAsyncTask();
-        task.execute(USGS_REQUEST_URL);
+
+        // 引用 LoaderManager，以便与 loader 进行交互。
+        LoaderManager loaderManager = getLoaderManager();
+
+        // 初始化 loader。传递上面定义的整数 ID 常量并为为捆绑
+        // 传递 null。为 LoaderCallbacks 参数（由于
+        // 此活动实现了 LoaderCallbacks 接口而有效）传递此活动。
+        /**
+         * 此方法新建了一个loader(如果已存在loader_id ==1则直接使用)
+         * 执行onCreateLoader()方法
+         * 之后再后台线程执行EarthquakeLoader.loadInBackground()返回一个地震列表到
+         * onLoadFinished()之后填充到mAdapter实现视图的更新
+         */
+        loaderManager.initLoader(EARTHQUAKE_LOADER_ID, null, this);
+
+        mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
+        earthquakeListView.setEmptyView(mEmptyStateTextView);
+
 
     }
 
-    private class EarthquakeAsyncTask extends AsyncTask<String, Void, List<Earthquake>> {
-
-        @Override
-        protected List<Earthquake> doInBackground(String... params) {
-            // 如果不存在任何 URL 或第一个 URL 为空，不执行执行。
-            if (params.length < 1 || params[0] == null) {
-                return null;
-            }
-
-            List<Earthquake> result = QueryUtils.fetchEarthquakeData(params[0]);
-            return result;
-        }
-
-        @Override
-        protected void onPostExecute(List<Earthquake> earthquakes) {
-            // 清除之前地震数据的适配器
-            mAdapter.clear();
-
-            // 如果存在 {@link Earthquake} 的有效列表，则将其添加到适配器的
-            // 数据集。这将触发 ListView 执行更新。
-            if (earthquakes != null && !earthquakes.isEmpty()) {
-                mAdapter.addAll(earthquakes);
-            }
-        }
+    @Override
+    public Loader<List<Earthquake>> onCreateLoader(int id, Bundle args) {
+        return new EarthquakeLoader(this,USGS_REQUEST_URL);
     }
+
+    @Override
+    public void onLoadFinished(Loader<List<Earthquake>> loader, List<Earthquake> data) {
+        // 因数据已加载，隐藏加载指示符
+        View loadingIndicator = findViewById(R.id.loading_indicator);
+        loadingIndicator.setVisibility(View.GONE);
+
+        // 清除之前地震数据的适配器
+        mAdapter.clear();
+
+        // 如果存在 {@link Earthquake} 的有效列表，则将其添加到适配器的
+        // 数据集。这将触发 ListView 执行更新。
+        if (data != null && !data.isEmpty()) {
+            mAdapter.addAll(data);
+        }
+/**
+ * 为避免首次启动应用时屏幕中闪现“未发现地震。(No earthquakes found.)”消息
+ * 将空状态 TextView 留空， 直至完成第一次加载
+ */
+        mEmptyStateTextView.setText(R.string.no_earthquakes);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<List<Earthquake>> loader) {
+        Log.v(LOG_TAG,"重置了Loader");
+        // 重置 Loader，以便能够清除现有数据。
+        mAdapter.clear();
+    }
+
 }
