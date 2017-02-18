@@ -16,8 +16,11 @@
 package com.example.android.quakereport;
 
 import android.app.LoaderManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -77,8 +80,7 @@ public class EarthquakeActivity extends AppCompatActivity implements android.app
             }
         });
 
-        // 引用 LoaderManager，以便与 loader 进行交互。
-        LoaderManager loaderManager = getLoaderManager();
+
 
         // 初始化 loader。传递上面定义的整数 ID 常量并为为捆绑
         // 传递 null。为 LoaderCallbacks 参数（由于
@@ -89,10 +91,36 @@ public class EarthquakeActivity extends AppCompatActivity implements android.app
          * 之后再后台线程执行EarthquakeLoader.loadInBackground()返回一个地震列表到
          * onLoadFinished()之后填充到mAdapter实现视图的更新
          */
-        loaderManager.initLoader(EARTHQUAKE_LOADER_ID, null, this);
 
         mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
         earthquakeListView.setEmptyView(mEmptyStateTextView);
+
+        /**
+         * 获取网络连接状态
+         */
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+
+
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+
+        if (networkInfo != null && networkInfo.isConnected()) {
+            // 引用 LoaderManager，以便与 loader 进行交互。
+            LoaderManager loaderManager = getLoaderManager();
+            /**
+             * 存在网络连接，则新建Loader
+             */
+            loaderManager.initLoader(EARTHQUAKE_LOADER_ID, null, this);
+        } else {
+            /**
+             * 无网络连接 时
+             * 隐藏加载指示符
+             * 提示无网络信息
+             */
+            View loadingIndicator = findViewById(R.id.loading_indicator);
+            loadingIndicator.setVisibility(View.GONE);
+            mEmptyStateTextView.setText(R.string.no_internet_connection);
+        }
 
 
     }
@@ -116,10 +144,10 @@ public class EarthquakeActivity extends AppCompatActivity implements android.app
         if (data != null && !data.isEmpty()) {
             mAdapter.addAll(data);
         }
-/**
- * 为避免首次启动应用时屏幕中闪现“未发现地震。(No earthquakes found.)”消息
- * 将空状态 TextView 留空， 直至完成第一次加载
- */
+        /**
+         * 为避免首次启动应用时屏幕中闪现“未发现地震。(No earthquakes found.)”消息
+         * 将空状态 TextView 留空， 直至完成第一次加载
+         */
         mEmptyStateTextView.setText(R.string.no_earthquakes);
     }
 

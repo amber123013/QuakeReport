@@ -18,4 +18,5 @@
     <!--获取的地址信息没有详细描述时使用此字符串-->
     <string name="near_the">Near the</string>
     <string name="no_earthquakes">No earthquakes found.</string>
+    <string name="no_internet_connection">No internet connection.</string>
 </resources>
