@@ -153,9 +153,9 @@ public class EarthquakeActivity extends AppCompatActivity implements android.app
 
     @Override
     public void onLoaderReset(Loader<List<Earthquake>> loader) {
-        Log.v(LOG_TAG,"重置了Loader");
+       // Log.v(LOG_TAG,"重置了Loader");
         // 重置 Loader，以便能够清除现有数据。
-        mAdapter.clear();
+       // 、、mAdapter.clear();
     }
 
 }

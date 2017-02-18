@@ -18,11 +18,20 @@ public class EarthquakeLoader extends AsyncTaskLoader<List<Earthquake>> {
     /** 查询 URL */
     private String mUrl;
 
+    private List<Earthquake> mAarthquakes = null;
+    /**
+     * 当手机屏幕关闭时，会调用onStopLoading（）方法，
+     * 此时应该将loader取消掉，当屏幕解锁时，会去执行onStartLoading（）方法，
+     * 在onStartLoading方法中根据数据是否需要重新加载进行判断。
+     * 而如果不在onStartLoading进行loader状态判断的话，
+     * 就导致了数据重复加载的问题
+     */
     /**必须执行此方法才能实际触发 loadInBackground() 方法的执行*/
     @Override
     protected void onStartLoading() {
         super.onStartLoading();
-        forceLoad();
+        if(mAarthquakes == null)
+            forceLoad();
     }
 
     public EarthquakeLoader(Context context, String url) {
@@ -40,8 +49,9 @@ public class EarthquakeLoader extends AsyncTaskLoader<List<Earthquake>> {
             return null;
         }
         // 执行网络请求、解析响应和提取地震列表。
-        List<Earthquake> earthquakes = QueryUtils.fetchEarthquakeData(mUrl);
+        mAarthquakes = QueryUtils.fetchEarthquakeData(mUrl);
         Log.v(LOG_TAG,"请求了一次信息");
-        return earthquakes;
+        return mAarthquakes;
     }
+
 }
