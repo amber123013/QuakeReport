@@ -53,7 +53,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         /**
-         *设置当前 EarhtquakePreferenceFragment 实例作为 每个偏好上的侦听程序。
+         *设置当前 EarhtquakePreferenceFragment 实例作为 每个偏好上的侦听程序。  1
          * 读取 设备上 SharedPreferences 中存储的偏好当前值，
          * 在 偏好摘要中进行显示
          */
