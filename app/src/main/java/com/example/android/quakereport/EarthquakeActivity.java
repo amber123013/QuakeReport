@@ -19,10 +19,12 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -41,8 +43,9 @@ public class EarthquakeActivity extends AppCompatActivity implements android.app
 
     private EarthquaAdapter mAdapter;
 
+    /**基准url*/
     private static final String USGS_REQUEST_URL =
-            "http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&orderby=time&minmag=5&limit=9";
+            "http://earthquake.usgs.gov/fdsnws/event/1/query";
     /**
      * 地震 loader ID 的常量值。我们可选择任意整数。
      * 仅当使用多个 loader 时该设置才起作用。
@@ -129,7 +132,32 @@ public class EarthquakeActivity extends AppCompatActivity implements android.app
 
     @Override
     public Loader<List<Earthquake>> onCreateLoader(int id, Bundle args) {
-        return new EarthquakeLoader(this,USGS_REQUEST_URL);
+        /**
+         * 根据用户偏好构造URI
+         */
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        //获取偏好排序
+        String orderBy = sharedPrefs.getString(
+                getString(R.string.settings_order_by_key),
+                getString(R.string.settings_order_by_default)
+        );
+
+        //最小震级
+        String minMagnitude = sharedPrefs.getString(
+                getString(R.string.settings_min_magnitude_key),
+                getString(R.string.settings_min_magnitude_default));
+        Uri baseUri = Uri.parse(USGS_REQUEST_URL);
+        Uri.Builder uriBuilder = baseUri.buildUpon();
+        //请求格式geojson
+        uriBuilder.appendQueryParameter("format", "geojson");
+        //获取数量
+        uriBuilder.appendQueryParameter("limit", "10");
+        //设置最小震级
+        uriBuilder.appendQueryParameter("minmag", minMagnitude);
+        //排序依据
+        uriBuilder.appendQueryParameter("orderby", orderBy);
+        Log.v("dfddaafds",uriBuilder.toString());
+        return new EarthquakeLoader(this,uriBuilder.toString());
     }
 
     @Override
